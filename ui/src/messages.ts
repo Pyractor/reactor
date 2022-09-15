@@ -9,5 +9,6 @@ export interface EvalMessage {
 export interface EvalResult {
   id: string;
   result: string | null;
+  out: string | null;
   error: string | null;
 }

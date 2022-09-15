@@ -2,6 +2,8 @@ import asyncio
 import websockets
 import json
 import traceback
+import io
+from contextlib import redirect_stdout
 from typing import List, Optional, Union, Any, Dict
 from pydantic import BaseModel
 from logging import info, error
@@ -21,20 +23,32 @@ async def echo(websocket):
         data = json.loads(message)
         info(data)
         # res = eval(data['code'], globals(), rt.__dict__)
+        f = io.StringIO()
         try:
             code = f"locals()['temp'] = ({data['code']})"
             info(code)
-            exec(code)
+            with redirect_stdout(f):
+                exec(code)
             res = locals()['temp']
             info(res)
-            await websocket.send(json.dumps({'result': res, 'id': data['id']}))
+            out = f.getvalue()
+            info(out)
+            await websocket.send(
+                json.dumps({
+                    'result': res,
+                    'id': data['id'],
+                    'out': out
+                }))
         except Exception as e:
             error(e)
             st = traceback.format_exc()
             error(st)
+            out = f.getvalue()
+            info(out)
             await websocket.send(
                 json.dumps({
                     'error': f"{e}\n{st}",
+                    'out': out,
                     'id': data['id']
                 }))
 

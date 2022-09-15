@@ -70,6 +70,7 @@ function CellCmp(props: {
         extensions={[python(), kmap, focusExt]}
         onChange={onChange}
       />
+      <pre>{result?.out}</pre>
       <pre>{result?.result || result?.error}</pre>
       <hr />
     </div>
