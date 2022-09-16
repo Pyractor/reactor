@@ -19,7 +19,7 @@ class Runtime:
         self.shared_globals = dict()
         self.shared_globals[self.tmpv] = None
         self.shared_locals = dict()
-        self.kernel = ReactorKernel('svg')
+        self.kernel = ReactorKernel()
 
     def name_exists(self, name: str) -> bool:
         try:
@@ -53,34 +53,21 @@ class Runtime:
             self.register_code(id, source)
             dependencies = self.dependency_cells(source)
             print(f"{id} depends on {dependencies}")
-            kres = self.kernel.do_execute(source)
-            print(kres)
 
-            lines = source.splitlines()
-            return_line = lines.pop()
-            setup_code = "\n".join(lines)
-            print(setup_code)
-            with redirect_stdout(f):
-                exec(setup_code, self.shared_globals, self.shared_locals)
-
-            eval_code = f"global {self.tmpv}\n{self.tmpv} = {return_line}"
-            print(eval_code)
-            with redirect_stdout(f):
-                exec(eval_code, self.shared_globals, self.shared_locals)
-
-            res = self.shared_globals[self.tmpv]
-            out = f.getvalue()
+            result = self.kernel.do_execute(source)
+            print(result)
+            res = result.result.result
+            out = result.stdout
+            err = result.stderr
         except Exception as e:
             st = traceback.format_exc()
             err = f"{e}\n{st}"
         finally:
-            info(res)
-            info(out)
-            info(err)
             return (res, out, err, dependencies)
 
 
 async def echo(websocket):
+    info("Got client connection")
     rt = Runtime()
 
     async for message in websocket:
