@@ -15,6 +15,30 @@ class Runtime:
     def __init__(self):
         self.sample = 'sample value'
 
+    def eval(self, source: str) -> (Any, str, str):
+        res = None
+        out = ""
+        err = ""
+        f = io.StringIO()
+
+        try:
+            code = """locals()['temp'] = ({0})
+            """.format(source)
+
+            info(code)
+            with redirect_stdout(f):
+                exec(code)
+            res = locals()['temp']
+            out = f.getvalue()
+        except Exception as e:
+            st = traceback.format_exc()
+            err = f"{e}\n{st}"
+        finally:
+            info(res)
+            info(out)
+            info(err)
+            return (res, out, err)
+
 
 async def echo(websocket):
     rt = Runtime()
@@ -22,35 +46,14 @@ async def echo(websocket):
     async for message in websocket:
         data = json.loads(message)
         info(data)
-        # res = eval(data['code'], globals(), rt.__dict__)
-        f = io.StringIO()
-        try:
-            code = f"locals()['temp'] = ({data['code']})"
-            info(code)
-            with redirect_stdout(f):
-                exec(code)
-            res = locals()['temp']
-            info(res)
-            out = f.getvalue()
-            info(out)
-            await websocket.send(
-                json.dumps({
-                    'result': res,
-                    'id': data['id'],
-                    'out': out
-                }))
-        except Exception as e:
-            error(e)
-            st = traceback.format_exc()
-            error(st)
-            out = f.getvalue()
-            info(out)
-            await websocket.send(
-                json.dumps({
-                    'error': f"{e}\n{st}",
-                    'out': out,
-                    'id': data['id']
-                }))
+        (res, out, err) = rt.eval(data['code'])
+        await websocket.send(
+            json.dumps({
+                'error': err,
+                'out': out,
+                'result': res,
+                'id': data['id']
+            }))
 
 
 async def main():

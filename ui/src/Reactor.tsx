@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { keymap } from "@codemirror/view";
 import { defaultKeymap } from "@codemirror/commands";
@@ -6,6 +6,7 @@ import { python } from "@codemirror/lang-python";
 import * as events from "@uiw/codemirror-extensions-events";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import * as msgs from "./messages";
+import debounce from "lodash.debounce";
 
 function CellCmp(props: {
   code: string;
@@ -105,7 +106,8 @@ function Reactor() {
   const [results, setResults] = useState<Record<string, msgs.EvalResult>>({});
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    "ws://localhost:1337"
+    "ws://localhost:1337",
+    { shouldReconnect: (closeEvent) => true }
   );
 
   const send = (v: msgs.Message) => {
@@ -132,13 +134,16 @@ function Reactor() {
     };
   };
 
-  const insertAfter = () => {
-    setState((state) => {
-      const newState = { ...state };
-      newState.cells.push(newCell(""));
-      return newState;
-    });
-  };
+  const insertAfter = useCallback(
+    debounce(() => {
+      setState((state) => {
+        const newState = { ...state };
+        newState.cells.push(newCell(""));
+        return newState;
+      });
+    }, 100),
+    [setState]
+  );
 
   const onFocus = (id: string) => {
     setState((state) => {
