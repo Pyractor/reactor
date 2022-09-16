@@ -3,12 +3,12 @@ import websockets
 import json
 import traceback
 import io
-import functools
+import coloredlogs
 from contextlib import redirect_stdout
 from typing import List, Optional, Union, Any, Dict
 from pydantic import BaseModel
 from logging import info, error
-import coloredlogs
+from reactor_kernel import ReactorKernel
 
 
 class Runtime:
@@ -19,6 +19,7 @@ class Runtime:
         self.shared_globals = dict()
         self.shared_globals[self.tmpv] = None
         self.shared_locals = dict()
+        self.kernel = ReactorKernel('svg')
 
     def name_exists(self, name: str) -> bool:
         try:
@@ -52,6 +53,8 @@ class Runtime:
             self.register_code(id, source)
             dependencies = self.dependency_cells(source)
             print(f"{id} depends on {dependencies}")
+            kres = self.kernel.do_execute(source)
+            print(kres)
 
             lines = source.splitlines()
             return_line = lines.pop()
