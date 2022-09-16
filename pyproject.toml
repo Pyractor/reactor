@@ -9,6 +9,8 @@ python = "^3.9"
 websockets = "^10.3"
 pydantic = "^1.10.2"
 coloredlogs = "^15.0.1"
+ipython = "^8.5.0"
+ipykernel = "^6.15.3"
 
 [tool.poetry.dev-dependencies]
 
