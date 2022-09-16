@@ -14,6 +14,9 @@ class Runtime:
 
     def __init__(self):
         self.sample = 'sample value'
+        self.shared_globals = dict()
+        self.shared_globals['__temp__'] = None
+        self.shared_locals = dict()
 
     def eval(self, source: str) -> (Any, str, str):
         res = None
@@ -22,13 +25,19 @@ class Runtime:
         f = io.StringIO()
 
         try:
-            code = """locals()['temp'] = ({0})
-            """.format(source)
-
-            info(code)
+            lines = source.splitlines()
+            return_line = lines.pop()
+            setup_code = "\n".join(lines)
+            print(setup_code)
             with redirect_stdout(f):
-                exec(code)
-            res = locals()['temp']
+                exec(setup_code, self.shared_globals, self.shared_locals)
+
+            eval_code = f"global __temp__\n__temp__ = {return_line}"
+            print(eval_code)
+            with redirect_stdout(f):
+                exec(eval_code, self.shared_globals, self.shared_locals)
+
+            res = self.shared_globals['__temp__']
             out = f.getvalue()
         except Exception as e:
             st = traceback.format_exc()
