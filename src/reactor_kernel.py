@@ -20,9 +20,9 @@ class ReactorKernel:
         info("Initializing kernel")
         self.kernel = InProcessKernel()
 
-    def do_execute(self, code: str):
+    def do_execute(self, code: str, cell_id: str):
         print(code)
         with capture_output() as io:
             # result = await self.kernel.do_execute(code, silent=False)
-            result = self.kernel.shell.run_cell(code)
+            result = self.kernel.shell.run_cell(code, cell_id=cell_id)
         return Result(result=result, stdout=io.stdout, stderr=io.stderr)

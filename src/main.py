@@ -47,14 +47,13 @@ class Runtime:
         out = ""
         err = ""
         dependencies = []
-        f = io.StringIO()
 
         try:
             self.register_code(id, source)
             dependencies = self.dependency_cells(source)
             print(f"{id} depends on {dependencies}")
 
-            result = self.kernel.do_execute(source)
+            result = self.kernel.do_execute(source, id)
             print(result)
             res = result.result.result
             out = result.stdout
