@@ -71,6 +71,7 @@ function CellCmp(props: {
   };
 
   const borderColor = colors[status];
+  const height = (editorState.split("\n").length + 1) * 20;
 
   return (
     <div
@@ -83,7 +84,7 @@ function CellCmp(props: {
       <CodeMirror
         value={editorState}
         basicSetup={{ defaultKeymap: false }}
-        height="100px"
+        height={`${height}px`}
         extensions={[python(), kmap, focusExt]}
         onChange={onChange}
       />
