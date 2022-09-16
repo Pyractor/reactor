@@ -11,11 +11,12 @@ import debounce from "lodash.debounce";
 function CellCmp(props: {
   code: string;
   id: string;
+  status: string;
   result: msgs.EvalResult | undefined;
   onFocus: (id: string) => void;
   onSubmit: (code: string) => void;
 }) {
-  const { id, code, result, onSubmit, onFocus } = props;
+  const { id, code, result, status, onSubmit, onFocus } = props;
   const [editorState, setEditorState] = useState(code);
 
   const onChange = React.useCallback(
@@ -62,8 +63,23 @@ function CellCmp(props: {
     ...defaultKeymap,
   ]);
 
+  const colors: Record<string, string> = {
+    idle: "gray",
+    success: "green",
+    error: "red",
+    running: "yellow",
+  };
+
+  const borderColor = colors[status];
+
   return (
-    <div>
+    <div
+      style={{
+        borderLeft: `15px solid ${borderColor}`,
+        marginLeft: "5px",
+        paddingLeft: "5px",
+      }}
+    >
       <CodeMirror
         value={editorState}
         basicSetup={{ defaultKeymap: false }}
@@ -82,6 +98,7 @@ function CellCmp(props: {
 interface Cell {
   id: string;
   code: string;
+  status: string;
 }
 
 interface ReactorState {
@@ -95,7 +112,7 @@ function randomId(): string {
 
 function newCell(code: string): Cell {
   const id = randomId();
-  return { id, code };
+  return { id, code, status: "idle" };
 }
 
 function Reactor() {
@@ -112,8 +129,52 @@ function Reactor() {
   );
 
   const send = (v: msgs.Message) => {
-    console.log(v);
     sendMessage(JSON.stringify(v));
+  };
+
+  function setAttr<K extends keyof Cell, T extends Cell[K]>(
+    id: string,
+    k: K,
+    v: T
+  ) {
+    setState((state) => {
+      const newState = { ...state };
+      const cells = newState.cells.map((cell) => {
+        if (cell.id === id) {
+          cell[k] = v;
+        }
+        return cell;
+      });
+      newState.cells = cells;
+      return newState;
+    });
+  }
+
+  const changeStatus = (id: string, status: string) => {
+    setAttr(id, "status", status);
+  };
+
+  const changeCode = (id: string, code: string) => {
+    setAttr(id, "code", code);
+  };
+
+  const run = (id: string, code: string, kind: string) => {
+    console.log(`running ${id} ${code} ${kind}`);
+    send({ id, code, kind });
+    changeStatus(id, "running");
+  };
+
+  const runDependant = (id: string) => {
+    const ids = (Object.values(results) as Array<msgs.EvalResult>)
+      .filter((res) => res.dependencies.includes(id))
+      .map((res) => res.id);
+    const uniqueIds = Array.from(new Set(ids));
+
+    state.cells.forEach((cell) => {
+      if (uniqueIds.includes(cell.id) && cell.id !== id) {
+        run(cell.id, cell.code, "eval");
+      }
+    });
   };
 
   useEffect(() => {
@@ -126,12 +187,20 @@ function Reactor() {
         newRes[data.id] = data;
         return newRes;
       });
+
+      if (data.error && data.error.length > 0) {
+        changeStatus(data.id, "error");
+      } else {
+        changeStatus(data.id, "success");
+        runDependant(data.id);
+      }
     }
   }, [lastMessage, setResults]);
 
   const onSubmit = (id: string) => {
     return (code: string) => {
-      send({ id, code, kind: "eval" });
+      changeCode(id, code);
+      run(id, code, "eval");
     };
   };
 
@@ -162,8 +231,6 @@ function Reactor() {
     [ReadyState.UNINSTANTIATED]: "Uninstantiated",
   }[readyState];
 
-  console.log(results);
-
   return (
     <div>
       <div style={{ position: "absolute", bottom: 15, right: 15 }}>
@@ -177,6 +244,7 @@ function Reactor() {
             onFocus={onFocus}
             code={cell.code}
             id={cell.id}
+            status={cell.status}
             result={results[cell.id]}
             key={cell.id}
           />
