@@ -33,10 +33,16 @@ class Runtime:
             with redirect_stdout(f):
                 exec(setup_code, self.shared_globals, self.shared_locals)
 
+            info(self.shared_locals)
+            info(compile(setup_code, 'setup_code', 'exec').co_names)
+
             eval_code = f"global {self.tmpv}\n{self.tmpv} = {return_line}"
             print(eval_code)
             with redirect_stdout(f):
                 exec(eval_code, self.shared_globals, self.shared_locals)
+
+            info(self.shared_locals)
+            info(compile(eval_code, 'eval_code', 'exec').co_names)
 
             res = self.shared_globals[self.tmpv]
             out = f.getvalue()
