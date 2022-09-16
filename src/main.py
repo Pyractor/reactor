@@ -3,6 +3,7 @@ import websockets
 import json
 import traceback
 import io
+import functools
 from contextlib import redirect_stdout
 from typing import List, Optional, Union, Any, Dict
 from pydantic import BaseModel
@@ -60,7 +61,7 @@ async def echo(websocket):
             json.dumps({
                 'error': err,
                 'out': out,
-                'result': res,
+                'result': str(res),
                 'id': data['id']
             }))
 

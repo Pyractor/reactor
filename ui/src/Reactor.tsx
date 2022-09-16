@@ -72,7 +72,8 @@ function CellCmp(props: {
         onChange={onChange}
       />
       <pre>{result?.out}</pre>
-      <pre>{result?.result || result?.error}</pre>
+      <pre>{result?.error}</pre>
+      <pre>{result?.result}</pre>
       <hr />
     </div>
   );
