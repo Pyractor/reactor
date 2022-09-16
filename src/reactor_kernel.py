@@ -23,5 +23,6 @@ class ReactorKernel:
     def do_execute(self, code: str):
         print(code)
         with capture_output() as io:
+            # result = await self.kernel.do_execute(code, silent=False)
             result = self.kernel.shell.run_cell(code)
         return Result(result=result, stdout=io.stdout, stderr=io.stderr)

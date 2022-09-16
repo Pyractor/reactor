@@ -58,7 +58,11 @@ class Runtime:
             print(result)
             res = result.result.result
             out = result.stdout
-            err = result.stderr
+            if result.result.error_before_exec:
+                err += str(result.result.error_before_exec)
+            if result.result.error_in_exec:
+                err += str(result.result.error_in_exec)
+            err = f"{err}{result.stderr}"
         except Exception as e:
             st = traceback.format_exc()
             err = f"{e}\n{st}"
