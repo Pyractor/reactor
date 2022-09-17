@@ -38,8 +38,18 @@ const CellCmp = (props: {
   result: msgs.EvalResult | undefined;
   onFocus: (id: string) => void;
   onSubmit: (code: string) => void;
+  onSubmitAndInsert: (code: string) => void;
 }) => {
-  const { id, code, result, status, onSubmit, onFocus, focused } = props;
+  const {
+    id,
+    code,
+    result,
+    status,
+    onSubmit,
+    onSubmitAndInsert,
+    onFocus,
+    focused,
+  } = props;
   const [editorState, setEditorState] = useState(code);
 
   const onChange = React.useCallback(
@@ -63,7 +73,7 @@ const CellCmp = (props: {
 
   const submitAndNext = () => {
     console.log("submitAndNext");
-    onSubmit(editorState);
+    onSubmitAndInsert(editorState);
     return true;
   };
 
@@ -146,11 +156,16 @@ function newCell(code: string): Cell {
   return { id, code, status: "idle" };
 }
 
+function emptyState(): ReactorState {
+  const cell = newCell("print('hello world')");
+  return {
+    focus: cell.id,
+    cells: [cell],
+  };
+}
+
 function Reactor() {
-  const [state, setState] = useState<ReactorState>({
-    focus: "",
-    cells: [newCell("print('hello world')")],
-  });
+  const [state, setState] = useState<ReactorState>(emptyState());
 
   const [results, setResults] = useState<Record<string, msgs.EvalResult>>({});
 
@@ -235,20 +250,30 @@ function Reactor() {
     };
   };
 
-  const insertAfter = useCallback(
-    debounce(() => {
-      setState((state) => {
-        const newState = { ...state };
-        const idx = newState.cells.findIndex(
-          (cell) => cell.id === newState.focus
-        );
-        const cell = newCell("");
-        newState.cells.splice(idx + 1, 0, cell);
-        newState.focus = cell.id;
-        return newState;
-      });
-    }, 100),
-    [setState]
+  const onSubmitAndInsert = (id: string) => {
+    return (code: string) => {
+      changeCode(id, code);
+      run(id, code, "eval");
+      insertAfter();
+    };
+  };
+
+  const insertAfter = () => {
+    setState((state) => {
+      const newState = { ...state };
+      const idx = newState.cells.findIndex(
+        (cell) => cell.id === newState.focus
+      );
+      const cell = newCell("");
+      newState.cells.splice(idx + 1, 0, cell);
+      newState.focus = cell.id;
+      return newState;
+    });
+  };
+
+  const insertAfterCb = useCallback(
+    debounce(insertAfter, 100, { leading: false, trailing: true }),
+    []
   );
 
   const onFocus = (id: string) => {
@@ -277,6 +302,7 @@ function Reactor() {
         return (
           <CellCmp
             onSubmit={onSubmit(cell.id)}
+            onSubmitAndInsert={onSubmitAndInsert(cell.id)}
             onFocus={onFocus}
             code={cell.code}
             id={cell.id}
@@ -287,7 +313,7 @@ function Reactor() {
           />
         );
       })}
-      <button onClick={insertAfter}>Add +</button>
+      <button onClick={insertAfterCb}>Add +</button>
     </div>
   );
 }
