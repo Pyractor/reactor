@@ -93,7 +93,7 @@ const CellCmp = (props: {
   };
 
   const borderColor = colors[status];
-  const height = (editorState.split("\n").length + 1) * 20;
+  const height = (editorState.split("\n").length + 2) * 20;
 
   return (
     <div
