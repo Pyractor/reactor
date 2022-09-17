@@ -2,6 +2,7 @@ import io
 import base64
 import IPython
 import matplotlib.axes
+import matplotlib.pyplot
 from pydantic.typing import NoneType
 from pydantic import BaseModel
 from typing import Union, List
@@ -38,6 +39,7 @@ def display(v):
         fig.savefig(buff, format=format)
         buff.seek(0)
         data = base64.b64encode(buff.read()).decode()
+        matplotlib.pyplot.close()
         return Plot(value=f"data:image/{format};base64, {data}")
 
     if (tv is dict or tv is list or tv is int or tv is float or tv is str
