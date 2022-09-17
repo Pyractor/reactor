@@ -184,26 +184,29 @@ function Reactor() {
 
   return (
     <Box>
-      <Box style={{ position: "fixed", bottom: 15, right: 15 }}>
+      <Button onClick={insertAfterCb}>+</Button>
+
+      <Box sx={{ position: "fixed", bottom: 15, right: 15 }}>
         Connection: {connectionStatus}
       </Box>
 
-      {state.cells.map((cell) => {
-        return (
-          <CellComponent
-            onSubmit={onSubmit(cell.id)}
-            onSubmitAndInsert={onSubmitAndInsert(cell.id)}
-            onFocus={onFocus}
-            code={cell.code}
-            id={cell.id}
-            status={cell.status}
-            result={results[cell.id]}
-            focused={cell.id === state.focus}
-            key={cell.id}
-          />
-        );
-      })}
-      <Button onClick={insertAfterCb}>Add +</Button>
+      <Box sx={{ width: "600px", mx: "auto" }}>
+        {state.cells.map((cell) => {
+          return (
+            <CellComponent
+              onSubmit={onSubmit(cell.id)}
+              onSubmitAndInsert={onSubmitAndInsert(cell.id)}
+              onFocus={onFocus}
+              code={cell.code}
+              id={cell.id}
+              status={cell.status}
+              result={results[cell.id]}
+              focused={cell.id === state.focus}
+              key={cell.id}
+            />
+          );
+        })}
+      </Box>
     </Box>
   );
 }

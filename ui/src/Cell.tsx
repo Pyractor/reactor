@@ -1,3 +1,5 @@
+import "./cm_editor.css";
+
 import React, { useState, useEffect, useCallback } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { defaultKeymap } from "@codemirror/commands";
@@ -9,6 +11,16 @@ import { githubLight, githubDark } from "@uiw/codemirror-theme-github";
 
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+
+const OutComponent = (props: { out: string | undefined }) => {
+  const { out } = props;
+
+  if (out === undefined || out.length === 0) {
+    return <span></span>;
+  }
+
+  return <pre>{out}</pre>;
+};
 
 const ResultComponent = (props: { result: msgs.Result | undefined }) => {
   const { result } = props;
@@ -26,7 +38,13 @@ const ResultComponent = (props: { result: msgs.Result | undefined }) => {
   }
 
   if (result.kind === "plot") {
-    return <img src={result.value} />;
+    return (
+      <Box
+        component="img"
+        src={result.value}
+        sx={{ maxWidth: "100%", my: "15px" }}
+      />
+    );
   }
 
   return <pre>{JSON.stringify(result)}</pre>;
@@ -106,20 +124,30 @@ const CellComponent = (props: {
 
   const borderColor = colors[status];
   const heightFn = (n: number) => {
-    return `${n * 20 + 4}px`;
+    return `${n * 25 + 4}px`;
   };
   const height = heightFn(editorState.split("\n").length);
 
   return (
-    <Box
+    <Paper
       sx={{
-        borderLeft: `15px solid ${borderColor}`,
-        my: "5px",
-        py: "5px",
+        p: 1.5,
+        display: "flex",
+        flexDirection: "row",
+        border: focused ? "1px solid cyan" : "1px solid #121212",
       }}
+      elevation={focused ? 2 : 0}
     >
-      <Paper elevation={focused ? 3 : 0}>
+      <Box
+        className={`state-indicator state-${status}`}
+        sx={{
+          borderRadius: 1,
+          mr: 1.5,
+        }}
+      ></Box>
+      <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
         <CodeMirror
+          style={{ borderRadius: 100 }}
           theme={githubDark}
           value={editorState}
           basicSetup={{ defaultKeymap: false }}
@@ -129,13 +157,13 @@ const CellComponent = (props: {
           extensions={[python(), kmap, focusExt]}
           onChange={onChange}
         />
-        <pre>{result?.out}</pre>
-        <pre>{result?.error}</pre>
-        <pre>
-          <ResultComponent result={result?.result} />
-        </pre>
-      </Paper>
-    </Box>
+        <Box sx={{ ml: 4 }}>
+          <OutComponent out={result?.out} />
+          <OutComponent out={result?.error} />
+          {result?.result && <ResultComponent result={result?.result} />}
+        </Box>
+      </Box>
+    </Paper>
   );
 };
 
