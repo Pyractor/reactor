@@ -14,8 +14,6 @@ class Result:
 
 class ReactorKernel:
 
-    # GUI possible values
-    # ['auto', 'agg', 'gtk', 'gtk3', 'gtk4', 'inline', 'ipympl', 'nbagg', 'notebook', 'osx', 'pdf', 'ps', 'qt', 'qt4', 'qt5', 'qt6', 'svg', 'tk', 'widget', 'wx']
     def __init__(self):
         info("Initializing kernel")
         self.kernel = InProcessKernel()

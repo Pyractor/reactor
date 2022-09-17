@@ -8,14 +8,36 @@ import useWebSocket, { ReadyState } from "react-use-websocket";
 import * as msgs from "./messages";
 import debounce from "lodash.debounce";
 
-function CellCmp(props: {
+const ResultComponent = (props: { result: msgs.Result | undefined }) => {
+  const { result } = props;
+
+  if (result === undefined || result === null) {
+    return <pre></pre>;
+  }
+
+  if (typeof result === "string") {
+    return <pre>{result}</pre>;
+  }
+
+  if (result.kind === "HTML") {
+    return <span dangerouslySetInnerHTML={{ __html: result.value }}></span>;
+  }
+
+  if (result.kind === "plot") {
+    return <img src={result.value} />;
+  }
+
+  return <pre>{JSON.stringify(result)}</pre>;
+};
+
+const CellCmp = (props: {
   code: string;
   id: string;
   status: string;
   result: msgs.EvalResult | undefined;
   onFocus: (id: string) => void;
   onSubmit: (code: string) => void;
-}) {
+}) => {
   const { id, code, result, status, onSubmit, onFocus } = props;
   const [editorState, setEditorState] = useState(code);
 
@@ -90,11 +112,13 @@ function CellCmp(props: {
       />
       <pre>{result?.out}</pre>
       <pre>{result?.error}</pre>
-      <pre>{result?.result}</pre>
+      <pre>
+        <ResultComponent result={result?.result} />
+      </pre>
       <hr />
     </div>
   );
-}
+};
 
 interface Cell {
   id: string;
@@ -234,7 +258,7 @@ function Reactor() {
 
   return (
     <div>
-      <div style={{ position: "absolute", bottom: 15, right: 15 }}>
+      <div style={{ position: "fixed", bottom: 15, right: 15 }}>
         Connection: {connectionStatus}
       </div>
 

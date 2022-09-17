@@ -9,6 +9,7 @@ from typing import List, Optional, Union, Any, Dict
 from pydantic import BaseModel
 from logging import info, error
 from reactor_kernel import ReactorKernel
+from reactor_display import Response, display
 
 
 class Runtime:
@@ -49,10 +50,6 @@ class Runtime:
         dependencies = []
 
         try:
-            self.register_code(id, source)
-            dependencies = self.dependency_cells(source)
-            print(f"{id} depends on {dependencies}")
-
             result = await self.kernel.do_execute(source, id)
             print(result)
             res = result.result.result
@@ -62,6 +59,10 @@ class Runtime:
             if result.result.error_in_exec:
                 err += str(result.result.error_in_exec)
             err = f"{err}{result.stderr}"
+
+            self.register_code(id, source)
+            dependencies = self.dependency_cells(source)
+            print(f"{id} depends on {dependencies}")
         except Exception as e:
             st = traceback.format_exc()
             err = f"{e}\n{st}"
@@ -78,13 +79,11 @@ async def echo(websocket):
         info(data)
         (res, out, err, dependencies) = await rt.eval(data['id'], data['code'])
         await websocket.send(
-            json.dumps({
-                'error': err,
-                'out': out,
-                'result': res,
-                'dependencies': list(set(dependencies)),
-                'id': data['id']
-            }))
+            Response(error=err,
+                     out=out,
+                     result=display(res),
+                     dependencies=list(set(dependencies)),
+                     id=data['id']).json())
 
 
 async def main():
