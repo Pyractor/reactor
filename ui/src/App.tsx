@@ -6,6 +6,12 @@ import CssBaseline from "@mui/material/CssBaseline";
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
+    background: {
+      default: "rgb(10, 25, 41)",
+    },
+    text: {
+      primary: "rgb(160, 170, 180)",
+    },
   },
 });
 
