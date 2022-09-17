@@ -1,5 +1,8 @@
 POE = poetry run python
 
+run-dev:
+	ls */*.py */**/*.py | entr -nr make run
+
 run:
 	$(POE) src/main.py
 
