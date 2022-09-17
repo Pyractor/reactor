@@ -125,7 +125,7 @@ function Reactor() {
     return (code: string) => {
       changeCode(id, code);
       run(id, code, "eval");
-      insertAfter();
+      focusNext();
     };
   };
 
@@ -138,6 +138,25 @@ function Reactor() {
       const cell = newCell("");
       newState.cells.splice(idx + 1, 0, cell);
       newState.focus = cell.id;
+      return newState;
+    });
+  };
+
+  const focusNext = () => {
+    setState((state) => {
+      const newState = { ...state };
+      const idx = newState.cells.findIndex(
+        (cell) => cell.id === newState.focus
+      );
+
+      if (idx < newState.cells.length - 1) {
+        newState.focus = newState.cells[idx + 1].id;
+      } else {
+        const cell = newCell("");
+        newState.cells.push(cell);
+        newState.focus = cell.id;
+      }
+
       return newState;
     });
   };
