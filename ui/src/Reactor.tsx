@@ -34,11 +34,12 @@ const CellCmp = (props: {
   code: string;
   id: string;
   status: string;
+  focused: boolean;
   result: msgs.EvalResult | undefined;
   onFocus: (id: string) => void;
   onSubmit: (code: string) => void;
 }) => {
-  const { id, code, result, status, onSubmit, onFocus } = props;
+  const { id, code, result, status, onSubmit, onFocus, focused } = props;
   const [editorState, setEditorState] = useState(code);
 
   const onChange = React.useCallback(
@@ -111,6 +112,7 @@ const CellCmp = (props: {
         basicSetup={{ defaultKeymap: false }}
         height={height}
         minHeight={heightFn(4)}
+        autoFocus={focused}
         extensions={[python(), kmap, focusExt]}
         onChange={onChange}
       />
@@ -237,7 +239,12 @@ function Reactor() {
     debounce(() => {
       setState((state) => {
         const newState = { ...state };
-        newState.cells.push(newCell(""));
+        const idx = newState.cells.findIndex(
+          (cell) => cell.id === newState.focus
+        );
+        const cell = newCell("");
+        newState.cells.splice(idx + 1, 0, cell);
+        newState.focus = cell.id;
         return newState;
       });
     }, 100),
@@ -275,6 +282,7 @@ function Reactor() {
             id={cell.id}
             status={cell.status}
             result={results[cell.id]}
+            focused={cell.id === state.focus}
             key={cell.id}
           />
         );
