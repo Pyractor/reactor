@@ -42,7 +42,7 @@ class Runtime:
                 info(f"Registering {id} as owner of {var}")
                 self.var_owners[var] = id
 
-    def eval(self, id: str, source: str) -> (Any, str, str):
+    async def eval(self, id: str, source: str) -> (Any, str, str):
         res = None
         out = ""
         err = ""
@@ -53,7 +53,7 @@ class Runtime:
             dependencies = self.dependency_cells(source)
             print(f"{id} depends on {dependencies}")
 
-            result = self.kernel.do_execute(source, id)
+            result = await self.kernel.do_execute(source, id)
             print(result)
             res = result.result.result
             out = result.stdout
@@ -76,12 +76,12 @@ async def echo(websocket):
     async for message in websocket:
         data = json.loads(message)
         info(data)
-        (res, out, err, dependencies) = rt.eval(data['id'], data['code'])
+        (res, out, err, dependencies) = await rt.eval(data['id'], data['code'])
         await websocket.send(
             json.dumps({
                 'error': err,
                 'out': out,
-                'result': str(res),
+                'result': res,
                 'dependencies': list(set(dependencies)),
                 'id': data['id']
             }))
