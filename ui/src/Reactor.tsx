@@ -93,7 +93,10 @@ const CellCmp = (props: {
   };
 
   const borderColor = colors[status];
-  const height = (editorState.split("\n").length + 2) * 20;
+  const heightFn = (n: number) => {
+    return `${n * 20 + 4}px`;
+  };
+  const height = heightFn(editorState.split("\n").length);
 
   return (
     <div
@@ -106,7 +109,8 @@ const CellCmp = (props: {
       <CodeMirror
         value={editorState}
         basicSetup={{ defaultKeymap: false }}
-        height={`${height}px`}
+        height={height}
+        minHeight={heightFn(4)}
         extensions={[python(), kmap, focusExt]}
         onChange={onChange}
       />
