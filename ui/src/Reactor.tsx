@@ -73,6 +73,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   );
 
   const send = (v: msgs.Message) => {
+    console.log("--->", v);
     sendMessage(JSON.stringify(v));
   };
 
@@ -100,9 +101,13 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
     setAttr(id, "code", code);
   };
 
-  const run = (id: string, code: string, kind: string) => {
-    console.log(`running ${id} ${code} ${kind}`);
-    send({ id, code, kind });
+  const run = (id: string, code: string) => {
+    send({ id, code, kind: "eval" });
+    changeStatus(id, "running");
+  };
+
+  const inputChange = (id: string, value: any) => {
+    send({ id, value, kind: "input_change" });
     changeStatus(id, "running");
   };
 
@@ -114,27 +119,33 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
 
     Object.values(state.cells).forEach((cell) => {
       if (uniqueIds.includes(cell.id) && cell.id !== id) {
-        run(cell.id, cell.code, "eval");
+        run(cell.id, cell.code);
       }
     });
   };
 
   useEffect(() => {
     if (lastMessage) {
-      const data = JSON.parse(lastMessage.data) as msgs.EvalResult;
-      console.log(data);
+      const data = JSON.parse(lastMessage.data) as msgs.Result;
+      console.log("<---", data);
 
-      setResults((res) => {
-        const newRes = { ...res };
-        newRes[data.id] = data;
-        return newRes;
-      });
+      if (msgs.isEvalResult(data)) {
+        setResults((res) => {
+          const newRes = { ...res };
+          newRes[data.id] = data;
+          return newRes;
+        });
 
-      if (data.error && data.error.length > 0) {
-        changeStatus(data.id, "error");
-      } else {
-        changeStatus(data.id, "success");
-        runDependant(data.id);
+        if (data.error && data.error.length > 0) {
+          changeStatus(data.id, "error");
+        } else {
+          changeStatus(data.id, "success");
+          runDependant(data.id);
+        }
+      }
+
+      if (msgs.isInputChangeResult(data)) {
+        runDependant(data.cell_id);
       }
     }
   }, [lastMessage, setResults]);
@@ -142,14 +153,14 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   const onSubmit = (id: string) => {
     return (code: string) => {
       changeCode(id, code);
-      run(id, code, "eval");
+      run(id, code);
     };
   };
 
   const onSubmitAndInsert = (id: string) => {
     return (code: string) => {
       changeCode(id, code);
-      run(id, code, "eval");
+      run(id, code);
       focusNext();
     };
   };
@@ -245,6 +256,11 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
     []
   );
 
+  const inputChangeCb = useCallback(
+    debounce(inputChange, 100, { leading: false, trailing: true }),
+    []
+  );
+
   const onFocus = (id: string) => {
     setState((oldState) => {
       const state = { ...oldState };
@@ -327,6 +343,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
             return (
               cell && (
                 <CellComponent
+                  onInputChange={inputChangeCb}
                   onSubmit={onSubmit(cell.id)}
                   onSubmitAndInsert={onSubmitAndInsert(cell.id)}
                   onFocus={onFocus}

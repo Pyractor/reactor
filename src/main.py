@@ -9,7 +9,7 @@ from typing import List, Optional, Union, Any, Dict
 from pydantic import BaseModel
 from logging import info, error
 from reactor.kernel import ReactorKernel
-from reactor.display import Response, display
+from reactor.display import EvalResponse, InputChangeResponse, display
 import reactor.ui
 
 
@@ -41,6 +41,16 @@ class Runtime:
                 info(f"Registering {id} as owner of {var}")
                 self.var_owners[var] = id
 
+    async def input_change(self, id: str, value) -> str:
+        setup_code = f"""
+    reactor.ui.do_change("{id}", {value})
+            """
+        result = await self.kernel.do_execute(setup_code, id)
+        if result.result.error_in_exec:
+            error(result.result.error_in_exec)
+            error(result)
+        return result.result.result
+
     async def eval(self, id: str, source: str) -> (Any, str, str):
         res = None
         out = ""
@@ -52,10 +62,11 @@ class Runtime:
     import reactor.ui
     global __current_cell_id__
     __current_cell_id__ = "{id}"
-    recator.ui.__current_cell_id__ = "{id}"
+    reactor.ui.__current_cell_id__ = "{id}"
             """
             result = await self.kernel.do_execute(setup_code, id)
-            info(result)
+            if result.result.error_in_exec:
+                error(result.result.error_in_exec)
             result = await self.kernel.do_execute(source, id)
             res = result.result.result
             out = result.stdout
@@ -82,13 +93,24 @@ async def echo(websocket):
     async for message in websocket:
         data = json.loads(message)
         info(data)
-        (res, out, err, dependencies) = await rt.eval(data['id'], data['code'])
-        await websocket.send(
-            Response(error=err,
-                     out=out,
-                     result=display(res),
-                     dependencies=list(set(dependencies)),
-                     id=data['id']).json())
+
+        if data['kind'] == "eval":
+            info("Handling eval")
+            (res, out, err,
+             dependencies) = await rt.eval(data['id'], data['code'])
+            response = EvalResponse(error=err,
+                                    out=out,
+                                    result=display(res),
+                                    dependencies=list(set(dependencies)),
+                                    id=data['id']).json()
+            await websocket.send(response)
+
+        if data['kind'] == "input_change":
+            info("Handling input change")
+            cell_id = await rt.input_change(data['id'], data['value'])
+            response = InputChangeResponse(id=data['id'],
+                                           cell_id=cell_id).json()
+            await websocket.send(response)
 
 
 async def main():

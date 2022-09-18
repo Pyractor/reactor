@@ -24,12 +24,19 @@ class Plot(BaseModel):
     value: str
 
 
-class Response(BaseModel):
+class EvalResponse(BaseModel):
+    kind: str = "eval"
     error: str
     out: str
     result: Union[str, dict, list, int, float, HTML, Plot, None]
     dependencies: List[str]
     id: str
+
+
+class InputChangeResponse(BaseModel):
+    kind: str = "input_change"
+    id: str
+    cell_id: str
 
 
 def display(v):

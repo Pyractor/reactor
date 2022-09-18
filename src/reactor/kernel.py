@@ -19,7 +19,7 @@ class ReactorKernel:
         self.kernel = InProcessKernel()
 
     async def do_execute(self, code: str, cell_id: str):
-        print(code)
+        info(f"===>\n{code}")
         with capture_output() as io:
             result = await self.kernel.shell.run_cell_async(code, silent=False)
         return Result(result=result, stdout=io.stdout, stderr=io.stderr)

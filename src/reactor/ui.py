@@ -10,6 +10,12 @@ def current_cell_id():
     return __current_cell_id__
 
 
+def do_change(id: str, v) -> str:
+    global __ui_registry__
+    __ui_registry__[id].value = v
+    return __ui_registry__[id].cell_id
+
+
 class Slider(BaseModel):
     kind: str = "slider"
     value: int = 10

@@ -27,8 +27,11 @@ const OutComponent = (props: { out: string | undefined }) => {
   );
 };
 
-const ResultComponent = (props: { result: msgs.Result | undefined }) => {
-  const { result } = props;
+const ResultComponent = (props: {
+  result: msgs.ReturnedValue | undefined;
+  onInputChange: (id: string, value: any) => void;
+}) => {
+  const { result, onInputChange } = props;
 
   if (result === undefined || result === null) {
     return <span></span>;
@@ -47,7 +50,7 @@ const ResultComponent = (props: { result: msgs.Result | undefined }) => {
   }
 
   if (result.kind === "input") {
-    return <UIElement el={result.el} />;
+    return <UIElement onChange={onInputChange} el={result.el} />;
   }
 
   if (result.kind === "plot") {
@@ -74,6 +77,7 @@ const CellComponent = (props: {
   darkMode: boolean;
   result: msgs.EvalResult | undefined;
   onFocus: (id: string) => void;
+  onInputChange: (id: string, value: any) => void;
   onSubmit: (code: string) => void;
   onSubmitAndInsert: (code: string) => void;
 }) => {
@@ -86,6 +90,7 @@ const CellComponent = (props: {
     onSubmit,
     onSubmitAndInsert,
     onFocus,
+    onInputChange,
     focused,
   } = props;
   const [editorState, setEditorState] = useState(code);
@@ -182,7 +187,12 @@ const CellComponent = (props: {
         <Box sx={{ ml: 4 }}>
           <OutComponent out={result?.out} />
           <OutComponent out={result?.error} />
-          {result?.result && <ResultComponent result={result?.result} />}
+          {result?.result && (
+            <ResultComponent
+              onInputChange={onInputChange}
+              result={result?.result}
+            />
+          )}
         </Box>
       </Box>
     </Paper>
