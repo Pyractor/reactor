@@ -16,6 +16,7 @@ import CloudIcon from "@mui/icons-material/Cloud";
 import CloudSyncIcon from "@mui/icons-material/CloudSync";
 import CloudOffIcon from "@mui/icons-material/CloudOff";
 import AddIcon from "@mui/icons-material/Add";
+import CropFreeIcon from "@mui/icons-material/CropFree";
 
 interface Cell {
   id: string;
@@ -48,6 +49,11 @@ function emptyState(): ReactorState {
 function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   const { darkMode, toggleMode } = props;
   const [state, setState] = useState<ReactorState>(emptyState());
+  const [fullWidth, setFullWidth] = useState(false);
+
+  const toggleFullWidth = () => {
+    setFullWidth((v) => !v);
+  };
 
   const [results, setResults] = useState<Record<string, msgs.EvalResult>>({});
 
@@ -224,6 +230,9 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
               </IconButton>
             </Box>
             <Box>
+              <IconButton onClick={toggleFullWidth}>
+                <CropFreeIcon />
+              </IconButton>
               <IconButton onClick={toggleMode}>
                 {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
               </IconButton>
@@ -237,7 +246,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
       </Box>
 
       <Box sx={{ mt: 10 }}>
-        <Box sx={{ maxWidth: "70%", mx: "auto" }}>
+        <Box sx={{ maxWidth: fullWidth ? "95%" : "70%", mx: "auto" }}>
           {state.cells.map((cell) => {
             return (
               <CellComponent

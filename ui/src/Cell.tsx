@@ -19,18 +19,26 @@ const OutComponent = (props: { out: string | undefined }) => {
     return <span></span>;
   }
 
-  return <pre>{out}</pre>;
+  return (
+    <Box component="pre" sx={{ pl: 0.5 }}>
+      {out}
+    </Box>
+  );
 };
 
 const ResultComponent = (props: { result: msgs.Result | undefined }) => {
   const { result } = props;
 
   if (result === undefined || result === null) {
-    return <pre></pre>;
+    return <span></span>;
   }
 
   if (typeof result === "string") {
-    return <pre>{result}</pre>;
+    return (
+      <Box component="pre" sx={{ pl: 0.5 }}>
+        {result}
+      </Box>
+    );
   }
 
   if (result.kind === "HTML") {
@@ -47,7 +55,11 @@ const ResultComponent = (props: { result: msgs.Result | undefined }) => {
     );
   }
 
-  return <pre>{JSON.stringify(result)}</pre>;
+  return (
+    <Box component="pre" sx={{ pl: 0.5 }}>
+      {JSON.stringify(result)}
+    </Box>
+  );
 };
 const CellComponent = (props: {
   code: string;
