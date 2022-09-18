@@ -200,6 +200,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
           position: "fixed",
           top: 0,
           width: "100%",
+          borderRadius: 0,
           zIndex: 100,
           borderColor: "rgba(194, 224, 255, 0.08)",
           borderWidth: "0px 0px thin",
@@ -236,7 +237,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
       </Box>
 
       <Box sx={{ mt: 10 }}>
-        <Box sx={{ width: "600px", mx: "auto" }}>
+        <Box sx={{ maxWidth: "70%", mx: "auto" }}>
           {state.cells.map((cell) => {
             return (
               <CellComponent
