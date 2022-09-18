@@ -8,8 +8,8 @@ from contextlib import redirect_stdout
 from typing import List, Optional, Union, Any, Dict
 from pydantic import BaseModel
 from logging import info, error
-from reactor_kernel import ReactorKernel
-from reactor_display import Response, display
+from reactor.kernel import ReactorKernel
+from reactor.display import Response, display
 
 
 class Runtime:
