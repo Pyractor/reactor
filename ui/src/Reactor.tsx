@@ -16,6 +16,7 @@ import CloudIcon from "@mui/icons-material/Cloud";
 import CloudSyncIcon from "@mui/icons-material/CloudSync";
 import CloudOffIcon from "@mui/icons-material/CloudOff";
 import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 
 interface Cell {
@@ -71,16 +72,16 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
     k: K,
     v: T
   ) {
-    setState((state) => {
-      const newState = { ...state };
-      const cells = newState.cells.map((cell) => {
+    setState((oldState) => {
+      const state = { ...oldState };
+      const cells = state.cells.map((cell) => {
         if (cell.id === id) {
           cell[k] = v;
         }
         return cell;
       });
-      newState.cells = cells;
-      return newState;
+      state.cells = cells;
+      return state;
     });
   }
 
@@ -147,34 +148,46 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   };
 
   const insertAfter = () => {
-    setState((state) => {
-      const newState = { ...state };
-      const idx = newState.cells.findIndex(
-        (cell) => cell.id === newState.focus
-      );
+    setState((oldState) => {
+      const state = { ...oldState };
+      const idx = state.cells.findIndex((cell) => cell.id === state.focus);
       const cell = newCell("");
-      newState.cells.splice(idx + 1, 0, cell);
-      newState.focus = cell.id;
-      return newState;
+      state.cells.splice(idx + 1, 0, cell);
+      state.focus = cell.id;
+      return state;
     });
   };
 
   const focusNext = () => {
-    setState((state) => {
-      const newState = { ...state };
-      const idx = newState.cells.findIndex(
-        (cell) => cell.id === newState.focus
-      );
+    setState((oldState) => {
+      const state = { ...oldState };
+      const idx = state.cells.findIndex((cell) => cell.id === state.focus);
 
-      if (idx < newState.cells.length - 1) {
-        newState.focus = newState.cells[idx + 1].id;
+      if (idx < state.cells.length - 1) {
+        state.focus = state.cells[idx + 1].id;
       } else {
         const cell = newCell("");
-        newState.cells.push(cell);
-        newState.focus = cell.id;
+        state.cells.push(cell);
+        state.focus = cell.id;
       }
 
-      return newState;
+      return state;
+    });
+  };
+
+  const removeCurrent = () => {
+    const id = state.focus;
+
+    setState((oldState) => {
+      const state = { ...oldState };
+      state.cells = state.cells.filter((cell) => cell.id !== id);
+      return state;
+    });
+
+    setResults((oldResults) => {
+      const res = { ...oldResults };
+      delete res[id];
+      return res;
     });
   };
 
@@ -184,10 +197,10 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   );
 
   const onFocus = (id: string) => {
-    setState((state) => {
-      const newState = { ...state };
-      newState.focus = id;
-      return newState;
+    setState((oldState) => {
+      const state = { ...oldState };
+      state.focus = id;
+      return state;
     });
   };
 
@@ -225,12 +238,18 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
             }}
           >
             <Box>
-              <IconButton onClick={insertAfterCb}>
+              <IconButton color="primary" onClick={insertAfterCb}>
                 <AddIcon />
+              </IconButton>
+              <IconButton color="secondary" onClick={removeCurrent}>
+                <DeleteIcon />
               </IconButton>
             </Box>
             <Box>
-              <IconButton onClick={toggleFullWidth}>
+              <IconButton
+                color={fullWidth ? "primary" : "default"}
+                onClick={toggleFullWidth}
+              >
                 <CropFreeIcon />
               </IconButton>
               <IconButton onClick={toggleMode}>
