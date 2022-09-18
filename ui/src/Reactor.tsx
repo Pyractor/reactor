@@ -27,7 +27,7 @@ interface Cell {
 
 interface ReactorState {
   focus: string;
-  cells: Array<Cell>;
+  cells: Record<string, Cell>;
 }
 
 function randomId(): string {
@@ -39,24 +39,31 @@ function newCell(code: string): Cell {
   return { id, code, status: "idle" };
 }
 
-function emptyState(): ReactorState {
+function emptyState(): [ReactorState, Array<string>] {
   const cell = newCell("print('hello world')");
-  return {
-    focus: cell.id,
-    cells: [cell],
-  };
+  const state: Record<string, Cell> = {};
+  state[cell.id] = cell;
+
+  return [
+    {
+      focus: cell.id,
+      cells: state,
+    },
+    [cell.id],
+  ];
 }
 
 function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   const { darkMode, toggleMode } = props;
-  const [state, setState] = useState<ReactorState>(emptyState());
+  const [_emptyState, _emptyOrder] = emptyState();
+  const [state, setState] = useState<ReactorState>(_emptyState);
+  const [cellOrder, setCellOrder] = useState<Array<string>>(_emptyOrder);
+  const [results, setResults] = useState<Record<string, msgs.EvalResult>>({});
   const [fullWidth, setFullWidth] = useState(false);
 
   const toggleFullWidth = () => {
     setFullWidth((v) => !v);
   };
-
-  const [results, setResults] = useState<Record<string, msgs.EvalResult>>({});
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
     "ws://localhost:1337",
@@ -74,13 +81,11 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   ) {
     setState((oldState) => {
       const state = { ...oldState };
-      const cells = state.cells.map((cell) => {
-        if (cell.id === id) {
-          cell[k] = v;
+      const cells = Object.keys(state.cells).forEach((cid) => {
+        if (cid === id) {
+          state.cells[id][k] = v;
         }
-        return cell;
       });
-      state.cells = cells;
       return state;
     });
   }
@@ -105,7 +110,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
       .map((res) => res.id);
     const uniqueIds = Array.from(new Set(ids));
 
-    state.cells.forEach((cell) => {
+    Object.values(state.cells).forEach((cell) => {
       if (uniqueIds.includes(cell.id) && cell.id !== id) {
         run(cell.id, cell.code, "eval");
       }
@@ -150,25 +155,34 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   const insertAfter = () => {
     setState((oldState) => {
       const state = { ...oldState };
-      const idx = state.cells.findIndex((cell) => cell.id === state.focus);
+      const idx = cellOrder.indexOf(state.focus);
       const cell = newCell("");
-      state.cells.splice(idx + 1, 0, cell);
+      state.cells[cell.id] = cell;
+      setCellOrder((order) => {
+        order.splice(idx + 1, 0, cell.id);
+        return order;
+      });
       state.focus = cell.id;
       return state;
     });
   };
 
   const focusNext = () => {
+    const cell = newCell("");
+
     setState((oldState) => {
       const state = { ...oldState };
-      const idx = state.cells.findIndex((cell) => cell.id === state.focus);
+      const idx = cellOrder.indexOf(state.focus);
 
-      if (idx < state.cells.length - 1) {
-        state.focus = state.cells[idx + 1].id;
+      if (idx < cellOrder.length - 1) {
+        state.focus = cellOrder[idx + 1];
       } else {
-        const cell = newCell("");
-        state.cells.push(cell);
+        state.cells[cell.id] = cell;
         state.focus = cell.id;
+
+        const order = [...cellOrder];
+        order.push(cell.id);
+        setCellOrder(order);
       }
 
       return state;
@@ -180,7 +194,13 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
 
     setState((oldState) => {
       const state = { ...oldState };
-      state.cells = state.cells.filter((cell) => cell.id !== id);
+      const idx = cellOrder.indexOf(id);
+      if (idx < cellOrder.length - 1) {
+        state.focus = cellOrder[idx + 1];
+      } else {
+        state.focus = cellOrder[cellOrder.length - 2];
+      }
+      delete state.cells[id];
       return state;
     });
 
@@ -189,6 +209,8 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
       delete res[id];
       return res;
     });
+
+    setCellOrder((order) => order.filter((cid) => cid !== id));
   };
 
   const insertAfterCb = useCallback(
@@ -266,20 +288,24 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
 
       <Box sx={{ mt: 10 }}>
         <Box sx={{ maxWidth: fullWidth ? "95%" : "70%", mx: "auto" }}>
-          {state.cells.map((cell) => {
+          {cellOrder.map((id) => {
+            const cell = state.cells[id];
+
             return (
-              <CellComponent
-                onSubmit={onSubmit(cell.id)}
-                onSubmitAndInsert={onSubmitAndInsert(cell.id)}
-                onFocus={onFocus}
-                code={cell.code}
-                id={cell.id}
-                status={cell.status}
-                darkMode={darkMode}
-                result={results[cell.id]}
-                focused={cell.id === state.focus}
-                key={cell.id}
-              />
+              cell && (
+                <CellComponent
+                  onSubmit={onSubmit(cell.id)}
+                  onSubmitAndInsert={onSubmitAndInsert(cell.id)}
+                  onFocus={onFocus}
+                  code={cell.code}
+                  id={cell.id}
+                  status={cell.status}
+                  darkMode={darkMode}
+                  result={results[cell.id]}
+                  focused={cell.id === state.focus}
+                  key={cell.id}
+                />
+              )
             );
           })}
         </Box>
