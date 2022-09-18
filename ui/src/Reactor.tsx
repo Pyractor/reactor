@@ -18,6 +18,8 @@ import CloudOffIcon from "@mui/icons-material/CloudOff";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CropFreeIcon from "@mui/icons-material/CropFree";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 interface Cell {
   id: string;
@@ -189,6 +191,31 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
     });
   };
 
+  const moveCurrentBy = (n: number) => {
+    const idx = cellOrder.indexOf(state.focus);
+    const nidx = n + idx;
+
+    setCellOrder((oldOrder) => {
+      const order = [...oldOrder];
+
+      if (nidx >= 0 && nidx < order.length) {
+        const tmp = order[idx];
+        order.splice(idx, 1);
+        order.splice(nidx, 0, tmp);
+      }
+
+      return order;
+    });
+  };
+
+  const moveUp = () => {
+    moveCurrentBy(-1);
+  };
+
+  const moveDown = () => {
+    moveCurrentBy(1);
+  };
+
   const removeCurrent = () => {
     const id = state.focus;
 
@@ -265,6 +292,12 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
               </IconButton>
               <IconButton color="secondary" onClick={removeCurrent}>
                 <DeleteIcon />
+              </IconButton>
+              <IconButton onClick={moveUp}>
+                <ArrowUpwardIcon />
+              </IconButton>
+              <IconButton onClick={moveDown}>
+                <ArrowDownwardIcon />
               </IconButton>
             </Box>
             <Box>
