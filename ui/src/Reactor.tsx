@@ -200,9 +200,13 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
           position: "fixed",
           top: 0,
           width: "100%",
+          zIndex: 100,
           borderColor: "rgba(194, 224, 255, 0.08)",
           borderWidth: "0px 0px thin",
-          backgroundColor: "rgba(10, 25, 41, 0.7)",
+          backdropFilter: "blur(10px)",
+          backgroundColor: darkMode
+            ? "rgba(10, 25, 41, 0.7)"
+            : "rgba(245, 245, 245, 0.7)",
         }}
       >
         <Toolbar>
