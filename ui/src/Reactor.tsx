@@ -42,16 +42,24 @@ function newCell(code: string): Cell {
 }
 
 function emptyState(): [ReactorState, Array<string>] {
-  const cell = newCell("print('hello world')");
+  const cell = newCell(`import reactor.ui as ui
+
+s = ui.Slider(value=20, min=2, max=1000)
+s`);
+  const cell2 = newCell(`import pandas as pd
+import math
+
+pd.DataFrame([math.log(i) for i in range(1, s.value)]).plot()`);
   const state: Record<string, Cell> = {};
   state[cell.id] = cell;
+  state[cell2.id] = cell2;
 
   return [
     {
       focus: cell.id,
       cells: state,
     },
-    [cell.id],
+    [cell.id, cell2.id],
   ];
 }
 

@@ -34,6 +34,7 @@ const SliderComponent = (props: {
       sx={{
         display: "flex",
         flexDirection: "row",
+        my: 1,
       }}
     >
       <Box sx={{ minWidth: 30 }}>{v}</Box>
