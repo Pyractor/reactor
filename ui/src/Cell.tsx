@@ -134,9 +134,12 @@ const CellComponent = (props: {
     <Paper
       sx={{
         p: 1.5,
+        mb: 1,
         display: "flex",
         flexDirection: "row",
-        border: focused ? "1px solid cyan" : "1px solid #121212",
+        border: focused
+          ? `1px solid ${darkMode ? "#119595" : "#9fffff"}`
+          : "1px solid rgba(0, 0, 0, 0.05)",
       }}
       elevation={focused ? 2 : 0}
     >
