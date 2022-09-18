@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Reactor from "./Reactor";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -22,10 +22,15 @@ const lightTheme = createTheme({
 });
 
 function App() {
+  const [darkMode, setDarkMode] = useState(true);
+  const toggleMode = () => {
+    setDarkMode((mode) => !mode);
+  };
+
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <CssBaseline />
-      <Reactor />
+      <Reactor darkMode={darkMode} toggleMode={toggleMode} />
     </ThemeProvider>
   );
 }

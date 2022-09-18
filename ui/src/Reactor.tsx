@@ -6,6 +6,16 @@ import CellComponent from "./Cell";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Paper from "@mui/material/Paper";
+import Toolbar from "@mui/material/Toolbar";
+
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import CloudIcon from "@mui/icons-material/Cloud";
+import CloudSyncIcon from "@mui/icons-material/CloudSync";
+import CloudOffIcon from "@mui/icons-material/CloudOff";
+import AddIcon from "@mui/icons-material/Add";
 
 interface Cell {
   id: string;
@@ -35,7 +45,8 @@ function emptyState(): ReactorState {
   };
 }
 
-function Reactor() {
+function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
+  const { darkMode, toggleMode } = props;
   const [state, setState] = useState<ReactorState>(emptyState());
 
   const [results, setResults] = useState<Record<string, msgs.EvalResult>>({});
@@ -175,39 +186,73 @@ function Reactor() {
   };
 
   const connectionStatus = {
-    [ReadyState.CONNECTING]: "Connecting",
-    [ReadyState.OPEN]: "Open",
-    [ReadyState.CLOSING]: "Closing",
-    [ReadyState.CLOSED]: "Closed",
-    [ReadyState.UNINSTANTIATED]: "Uninstantiated",
+    [ReadyState.CONNECTING]: <CloudSyncIcon />,
+    [ReadyState.OPEN]: <CloudIcon />,
+    [ReadyState.CLOSING]: "closing",
+    [ReadyState.CLOSED]: <CloudOffIcon />,
+    [ReadyState.UNINSTANTIATED]: "uninstantiated",
   }[readyState];
 
   return (
-    <Box>
-      <Button onClick={insertAfterCb}>+</Button>
+    <>
+      <Paper
+        sx={{
+          position: "fixed",
+          top: 0,
+          width: "100%",
+          borderColor: "rgba(194, 224, 255, 0.08)",
+          borderWidth: "0px 0px thin",
+          backgroundColor: "rgba(10, 25, 41, 0.7)",
+        }}
+      >
+        <Toolbar>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
+            <Box>
+              <IconButton onClick={insertAfterCb}>
+                <AddIcon />
+              </IconButton>
+            </Box>
+            <Box>
+              <IconButton onClick={toggleMode}>
+                {darkMode ? <LightModeIcon /> : <DarkModeIcon />}
+              </IconButton>
+            </Box>
+          </Box>
+        </Toolbar>
+      </Paper>
 
       <Box sx={{ position: "fixed", bottom: 15, right: 15 }}>
-        Connection: {connectionStatus}
+        <IconButton>{connectionStatus}</IconButton>
       </Box>
 
-      <Box sx={{ width: "600px", mx: "auto" }}>
-        {state.cells.map((cell) => {
-          return (
-            <CellComponent
-              onSubmit={onSubmit(cell.id)}
-              onSubmitAndInsert={onSubmitAndInsert(cell.id)}
-              onFocus={onFocus}
-              code={cell.code}
-              id={cell.id}
-              status={cell.status}
-              result={results[cell.id]}
-              focused={cell.id === state.focus}
-              key={cell.id}
-            />
-          );
-        })}
+      <Box sx={{ mt: 10 }}>
+        <Box sx={{ width: "600px", mx: "auto" }}>
+          {state.cells.map((cell) => {
+            return (
+              <CellComponent
+                onSubmit={onSubmit(cell.id)}
+                onSubmitAndInsert={onSubmitAndInsert(cell.id)}
+                onFocus={onFocus}
+                code={cell.code}
+                id={cell.id}
+                status={cell.status}
+                darkMode={darkMode}
+                result={results[cell.id]}
+                focused={cell.id === state.focus}
+                key={cell.id}
+              />
+            );
+          })}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }
+
 export default Reactor;

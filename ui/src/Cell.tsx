@@ -54,6 +54,7 @@ const CellComponent = (props: {
   id: string;
   status: string;
   focused: boolean;
+  darkMode: boolean;
   result: msgs.EvalResult | undefined;
   onFocus: (id: string) => void;
   onSubmit: (code: string) => void;
@@ -64,6 +65,7 @@ const CellComponent = (props: {
     code,
     result,
     status,
+    darkMode,
     onSubmit,
     onSubmitAndInsert,
     onFocus,
@@ -148,7 +150,7 @@ const CellComponent = (props: {
       <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
         <CodeMirror
           style={{ borderRadius: 100 }}
-          theme={githubDark}
+          theme={darkMode ? githubDark : githubLight}
           value={editorState}
           basicSetup={{ defaultKeymap: false }}
           height={height}
