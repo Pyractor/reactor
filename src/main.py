@@ -10,16 +10,14 @@ from pydantic import BaseModel
 from logging import info, error
 from reactor.kernel import ReactorKernel
 from reactor.display import Response, display
+import reactor.ui
 
 
 class Runtime:
 
     def __init__(self):
-        self.tmpv = "__temp_rktr__"
+        self.tmpv = "__current_cell_id__"
         self.var_owners = dict()
-        self.shared_globals = dict()
-        self.shared_globals[self.tmpv] = None
-        self.shared_locals = dict()
         self.kernel = ReactorKernel()
 
     def name_exists(self, name: str) -> bool:
@@ -50,8 +48,15 @@ class Runtime:
         dependencies = []
 
         try:
+            setup_code = f"""
+    import reactor.ui
+    global __current_cell_id__
+    __current_cell_id__ = "{id}"
+    recator.ui.__current_cell_id__ = "{id}"
+            """
+            result = await self.kernel.do_execute(setup_code, id)
+            info(result)
             result = await self.kernel.do_execute(source, id)
-            print(result)
             res = result.result.result
             out = result.stdout
             if result.result.error_before_exec:
@@ -62,7 +67,7 @@ class Runtime:
 
             self.register_code(id, source)
             dependencies = self.dependency_cells(source)
-            print(f"{id} depends on {dependencies}")
+            info(f"{id} depends on {dependencies}")
         except Exception as e:
             st = traceback.format_exc()
             err = f"{e}\n{st}"
@@ -89,7 +94,7 @@ async def echo(websocket):
 async def main():
     host = "localhost"
     port = 1337
-    print(f"Running on {host}:{port}")
+    info(f"Running on {host}:{port}")
     async with websockets.serve(echo, host, port):
         await asyncio.Future()
 

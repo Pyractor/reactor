@@ -1,3 +1,4 @@
+import { UIElement } from "./UI";
 export type Message = EvalMessage;
 
 export interface EvalMessage {
@@ -9,6 +10,7 @@ export interface EvalMessage {
 export type Result =
   | string
   | { kind: "HTML"; value: string }
+  | { kind: "input"; el: UIElement }
   | { kind: "plot"; value: string };
 
 export interface EvalResult {

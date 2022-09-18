@@ -4,13 +4,19 @@ import IPython
 import matplotlib.axes
 import matplotlib.pyplot
 from pydantic.typing import NoneType
-from pydantic import BaseModel
 from typing import Union, List
+from pydantic import BaseModel
+from reactor.ui import Slider
 
 
 class HTML(BaseModel):
     kind: str = "HTML"
     value: str
+
+
+class Input(BaseModel):
+    kind: str = "input"
+    el: Union[Slider]
 
 
 class Plot(BaseModel):
@@ -28,6 +34,9 @@ class Response(BaseModel):
 
 def display(v):
     tv = type(v)
+
+    if tv is Slider:
+        return Input(el=v)
 
     if tv is IPython.display.HTML:
         return HTML(value=v.data)

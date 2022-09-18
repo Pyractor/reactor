@@ -8,6 +8,7 @@ import { keymap } from "@codemirror/view";
 import * as events from "@uiw/codemirror-extensions-events";
 import * as msgs from "./messages";
 import { githubLight, githubDark } from "@uiw/codemirror-theme-github";
+import UIElement from "./UI";
 
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -43,6 +44,10 @@ const ResultComponent = (props: { result: msgs.Result | undefined }) => {
 
   if (result.kind === "HTML") {
     return <span dangerouslySetInnerHTML={{ __html: result.value }}></span>;
+  }
+
+  if (result.kind === "input") {
+    return <UIElement el={result.el} />;
   }
 
   if (result.kind === "plot") {
