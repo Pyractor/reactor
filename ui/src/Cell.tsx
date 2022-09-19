@@ -1,6 +1,6 @@
 import "./cm_editor.css";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { defaultKeymap } from "@codemirror/commands";
 import { python } from "@codemirror/lang-python";
@@ -139,14 +139,6 @@ const CellComponent = (props: {
     ...defaultKeymap,
   ]);
 
-  const colors: Record<string, string> = {
-    idle: "gray",
-    success: "green",
-    error: "red",
-    running: "yellow",
-  };
-
-  const borderColor = colors[status];
   const heightFn = (n: number) => {
     return `${n * 25 + 4}px`;
   };

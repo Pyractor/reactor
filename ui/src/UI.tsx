@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 
 import Box from "@mui/material/Box";
-import Slider from "@mui/material/Slider";
+import { Slider as SliderEl } from "@mui/material";
 
 export interface Slider {
   kind: "slider";
@@ -38,12 +38,12 @@ const SliderComponent = (props: {
       }}
     >
       <Box sx={{ minWidth: 30 }}>{v}</Box>
-      <Slider onChange={handleChange} value={v} min={min} max={max} />
+      <SliderEl onChange={handleChange} value={v} min={min} max={max} />
     </Box>
   );
 };
 
-const UIElement = (props: {
+const UIElementComponent = (props: {
   el: UIElement;
   onChange: (id: string, value: any) => void;
 }) => {
@@ -60,4 +60,4 @@ const UIElement = (props: {
   );
 };
 
-export default UIElement;
+export default UIElementComponent;

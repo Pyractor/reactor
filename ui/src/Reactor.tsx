@@ -5,7 +5,6 @@ import debounce from "lodash.debounce";
 import CellComponent from "./Cell";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Paper from "@mui/material/Paper";
 import Toolbar from "@mui/material/Toolbar";
@@ -92,7 +91,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   ) {
     setState((oldState) => {
       const state = { ...oldState };
-      const cells = Object.keys(state.cells).forEach((cid) => {
+      Object.keys(state.cells).forEach((cid) => {
         if (cid === id) {
           state.cells[id][k] = v;
         }
@@ -132,6 +131,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
     });
   };
 
+  /* eslint-disable */
   useEffect(() => {
     if (lastMessage) {
       const data = JSON.parse(lastMessage.data) as msgs.Result;
@@ -156,7 +156,7 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
         runDependant(data.cell_id);
       }
     }
-  }, [lastMessage, setResults]);
+  }, [lastMessage]);
 
   const onSubmit = (id: string) => {
     return (code: string) => {
