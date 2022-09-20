@@ -75,7 +75,8 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
   };
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    "ws://localhost:1337",
+    /* "ws://localhost:1337", */
+    "wss://potatoed.xyz/ws",
     { shouldReconnect: (closeEvent) => true }
   );
 

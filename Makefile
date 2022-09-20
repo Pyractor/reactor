@@ -8,3 +8,6 @@ run:
 
 run-ui:
 	cd ui && npm run start
+
+build-ui:
+	cd ui && npm run build
