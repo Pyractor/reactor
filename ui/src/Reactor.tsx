@@ -19,6 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CropFreeIcon from "@mui/icons-material/CropFree";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 interface Cell {
   id: string;
@@ -260,6 +261,10 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
     setCellOrder((order) => order.filter((cid) => cid !== id));
   };
 
+  const runAll = () => {
+    cellOrder.forEach((id) => run(id, state.cells[id].code));
+  };
+
   const insertAfterCb = useCallback(
     debounce(insertAfter, 100, { leading: false, trailing: true }),
     []
@@ -323,6 +328,9 @@ function Reactor(props: { darkMode: boolean; toggleMode: () => void }) {
               </IconButton>
               <IconButton onClick={moveDown}>
                 <ArrowDownwardIcon />
+              </IconButton>
+              <IconButton onClick={runAll}>
+                <PlayArrowIcon />
               </IconButton>
             </Box>
             <Box>
