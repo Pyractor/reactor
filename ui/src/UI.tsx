@@ -52,6 +52,7 @@ const UIElementComponent = (props: {
   return (
     <SliderComponent
       id={el.id}
+      key={el.id}
       value={el.value}
       min={el.min}
       max={el.max}
